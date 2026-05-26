@@ -71,6 +71,8 @@ export type GalleryConfig = {
   subscribeEnabled?: boolean;
   sortOrder?: "newest" | "oldest" | "title" | "artist" | "random";
   splash?: "bigtext" | "logo" | "ascii" | "image";
+  submitMethod?: "github-pr";
+  submitRepo?: string;
 };
 
 const defaultConfig: GalleryConfig = {

@@ -20,6 +20,7 @@ export function Footer({ screen, config, prevTitle, nextTitle, hasArchive }: Pro
   const items = [...(hints[screen] ?? [])];
   if (screen === "list" && hasArchive) items.push("a archive");
   if (screen === "list" && config?.subscribeEnabled !== false) items.push("s subscribe");
+  if (screen === "list" && config?.submitMethod === "github-pr") items.push("u submit");
   const name = config?.name ?? "mussheum";
 
   return (

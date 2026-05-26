@@ -9,6 +9,7 @@ import { Footer } from "./components/footer.js";
 import { ClosedScreen } from "./components/closed-screen.js";
 import { ArchiveScreen } from "./components/archive-screen.js";
 import { SubscribePrompt } from "./components/subscribe-prompt.js";
+import { SubmitPrompt } from "./components/submit-prompt.js";
 import { loadGallery, loadCuratorNote, loadGalleryConfig, loadArchive, checkGalleryHours, type Artwork, type CuratorNote, type GalleryConfig, type GalleryStatus, type ArchivedExhibition } from "./lib/gallery.js";
 import { join, dirname } from "path";
 import { readFile } from "fs/promises";
@@ -37,6 +38,7 @@ export function App({ userKey }: Props) {
   const [galleryStatus, setGalleryStatus] = useState<GalleryStatus | null>(null);
   const [archive, setArchive] = useState<ArchivedExhibition[]>([]);
   const [subscribing, setSubscribing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const baseDir = join(dirname(process.argv[1] ?? "."), "..");
 
@@ -59,12 +61,13 @@ export function App({ userKey }: Props) {
   }, []);
 
   useInput((input, key) => {
-    if (subscribing) return;
+    if (subscribing || submitting) return;
     if (screen.type === "splash" || screen.type === "exit") return;
 
     if (screen.type === "closed") {
       if (input === "q") exit();
       if (input === "s" && config?.subscribeEnabled !== false) setSubscribing(true);
+      if (input === "u" && config?.submitMethod === "github-pr") setSubmitting(true);
       return;
     }
 
@@ -72,6 +75,7 @@ export function App({ userKey }: Props) {
       if (input === "q") setScreen({ type: "exit" });
       if (input === "a" && archive.length > 0) setScreen({ type: "archive" });
       if (input === "s" && config?.subscribeEnabled !== false) setSubscribing(true);
+      if (input === "u" && config?.submitMethod === "github-pr") setSubmitting(true);
     }
 
     if (screen.type === "archive") {
@@ -139,6 +143,13 @@ export function App({ userKey }: Props) {
         </Box>
       );
     }
+    if (submitting) {
+      return (
+        <Box flexDirection="column" height={rows} width={cols} alignItems="center" justifyContent="center">
+          <SubmitPrompt config={config} onDone={() => setSubmitting(false)} />
+        </Box>
+      );
+    }
     return <ClosedScreen config={config} status={galleryStatus} onOpen={() => setScreen({ type: "list" })} />;
   }
 
@@ -156,7 +167,7 @@ export function App({ userKey }: Props) {
 
   return (
     <Box flexDirection="column" height={rows} width={cols}>
-      {screen.type === "list" && !subscribing && (
+      {screen.type === "list" && !subscribing && !submitting && (
         <>
           <Box flexGrow={1} />
           <Box justifyContent="center" flexGrow={2}>
@@ -168,6 +179,11 @@ export function App({ userKey }: Props) {
       {screen.type === "list" && subscribing && (
         <Box flexGrow={1} alignItems="center" justifyContent="center">
           <SubscribePrompt config={config} onDone={() => setSubscribing(false)} />
+        </Box>
+      )}
+      {screen.type === "list" && submitting && (
+        <Box flexGrow={1} alignItems="center" justifyContent="center">
+          <SubmitPrompt config={config} onDone={() => setSubmitting(false)} />
         </Box>
       )}
       {screen.type === "detail" && (

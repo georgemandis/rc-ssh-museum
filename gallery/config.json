@@ -9,5 +9,7 @@
   "utmMedium": "ssh",
   "subscribeEnabled": false,
   "sortOrder": "newest",
-  "splash": "logo"
+  "splash": "logo",
+  "submitMethod": "github-pr",
+  "submitRepo": "georgemandis/rc-ssh-museum"
 }
