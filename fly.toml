@@ -1,0 +1,39 @@
+# Rename 'mussheum' to your Fly.io app name
+app = 'mussheum'
+primary_region = 'ewr'
+
+[build]
+
+[[mounts]]
+  source = 'mussheum_vol'
+  destination = '/data'
+
+[[services]]
+  protocol = 'tcp'
+  internal_port = 2222
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 22
+
+[[services]]
+  protocol = 'tcp'
+  internal_port = 8080
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 80
+    handlers = ['http']
+
+  [[services.ports]]
+    port = 443
+    handlers = ['tls', 'http']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1

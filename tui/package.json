@@ -1,0 +1,22 @@
+{
+  "name": "mussheum",
+  "module": "tui.tsx",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19.2.14",
+    "react-devtools-core": "^7.0.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "ink": "^7.0.1",
+    "ink-big-text": "^2.0.0",
+    "ink-picture": "^1.3.5",
+    "react": "^19.2.5",
+    "sharp": "^0.34.5"
+  }
+}

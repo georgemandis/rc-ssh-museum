@@ -1,0 +1,13 @@
+{
+  "name": "RC mussheum",
+  "tagline": "an ssh art gallery",
+  "exhibition": "The robo GIF collection",
+  "accentColor": "greenBright",
+  "secondaryColor": "green",
+  "curationDate": "2026",
+  "utmSource": "mussheum",
+  "utmMedium": "ssh",
+  "subscribeEnabled": false,
+  "sortOrder": "newest",
+  "splash": "logo"
+}

@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "types": ["bun-types"],
+    "skipLibCheck": true
+  },
+  "include": ["*.tsx", "components/**/*.tsx"]
+}

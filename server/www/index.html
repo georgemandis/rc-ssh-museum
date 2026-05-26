@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mussheum — an SSH art gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --fg: #d0d0d0;
+      --white: #e8e8e8;
+      --dim: #676e95;
+      --accent: #c792ea;
+      --secondary: #c3e88d;
+      --cyan: #8ae9fd;
+      --mono: "JetBrains Mono", Menlo, Consolas, monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--mono);
+      font-size: 14px;
+      background: #000;
+      color: var(--fg);
+      min-height: 100vh;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .line {
+      display: flex;
+      align-items: center;
+      min-height: 1.5rem;
+      padding: 0 1.5rem;
+      border-left: 2px solid transparent;
+    }
+
+    .line:hover { background: #323650; }
+
+    .line-interactive {
+      cursor: pointer;
+    }
+
+    .line-interactive:hover,
+    .line-interactive:focus {
+      background: #323650;
+      border-left-color: var(--accent);
+      outline: none;
+    }
+
+    .comment { color: var(--dim); }
+    .cmd { color: var(--cyan); margin-right: 0.5ch; opacity: 0.85; }
+    .arg { color: var(--accent); }
+    .prompt { color: var(--secondary); margin-right: 0.5rem; }
+    .output { color: var(--white); padding-left: 1ch; opacity: 0.8; }
+
+    .title {
+      padding: 2rem 1.5rem 0;
+      font-size: 1.5rem;
+      color: var(--cyan);
+    }
+
+    .tagline {
+      padding: 0.25rem 1.5rem 0;
+      color: var(--dim);
+      font-style: italic;
+    }
+
+    .copy-btn {
+      margin-left: 1.5ch;
+      color: var(--dim);
+      font-size: 11px;
+      border: 1px solid #3b3f5c;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .line-interactive:hover .copy-btn,
+    .line-interactive:focus .copy-btn { opacity: 1; }
+
+    .line-interactive.copied .copy-btn {
+      opacity: 1;
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    details { border: none; }
+
+    details summary {
+      display: flex;
+      align-items: center;
+      min-height: 1.5rem;
+      padding: 0 1.5rem;
+      border-left: 2px solid transparent;
+      cursor: pointer;
+      list-style: none;
+      color: var(--dim);
+    }
+
+    details summary::-webkit-details-marker { display: none; }
+    details summary::marker { display: none; content: ""; }
+    details summary:hover { background: #323650; border-left-color: var(--secondary); }
+
+    details summary .fold-icon {
+      color: var(--secondary);
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+    }
+
+    details[open] summary .fold-icon { transform: rotate(90deg); }
+
+    .footer { color: var(--dim); font-size: 12px; }
+
+    @media (max-width: 480px) {
+      .line { padding: 0 1rem; }
+      .title { padding: 1.5rem 1rem 0; }
+      .tagline { padding: 0.25rem 1rem 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Replace "mussheum" with your gallery name -->
+  <a href="/" style="text-decoration: none; color: inherit;"><h1 class="title">mussheum</h1></a>
+  <p class="tagline">an ssh art gallery</p>
+
+  <div class="line"></div>
+
+  <div class="line">
+    <span class="comment"># an art gallery that lives in your terminal</span>
+  </div>
+
+  <div class="line"></div>
+
+  <!-- Replace "your-host.example.com" with your SSH hostname -->
+  <div class="line line-interactive" tabindex="0" onclick="copyCommand(this)" onkeydown="event.key==='Enter'&&copyCommand(this)">
+    <span class="cmd">ssh </span><span class="arg">your-host.example.com</span>
+    <span class="copy-btn">copy</span>
+  </div>
+
+  <div class="line"></div>
+
+  <details>
+    <summary><span class="fold-icon">&#9654;</span> <span class="comment"># more info</span></summary>
+
+  <div class="line"></div>
+
+  <div class="line">
+    <span class="prompt">$ </span><span class="cmd">cat </span><span class="arg">about.txt</span>
+  </div>
+
+  <div class="line"></div>
+
+  <div class="line">
+    <span class="output">Customize this page with information about your gallery.</span>
+  </div>
+  <div class="line">
+    <span class="output">Edit server/www/index.html to change the content.</span>
+  </div>
+
+  <div class="line"></div>
+
+  <div class="line">
+    <span class="output">Submit artwork: </span><span class="cmd">ssh </span><span class="arg">your-host.example.com</span> <span class="cmd">submit</span> <span style="color: var(--dim);">&lt;</span> <span style="color: var(--white);">submission.zip</span>
+  </div>
+
+  <div class="line"></div>
+
+  </details>
+
+  <div class="line"></div>
+
+  <div class="line footer">
+    <span class="comment"># powered by <a href="https://github.com/georgemandis/mussheum">mussheum</a></span>
+  </div>
+
+  <script>
+    function copyCommand(el, text) {
+      navigator.clipboard.writeText(text || "ssh your-host.example.com").then(() => {
+        const btn = el.querySelector(".copy-btn");
+        el.classList.add("copied");
+        btn.textContent = "copied!";
+        setTimeout(() => {
+          el.classList.remove("copied");
+          btn.textContent = "copy";
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

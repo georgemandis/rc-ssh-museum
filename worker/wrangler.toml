@@ -1,0 +1,26 @@
+# Rename to match your Cloudflare Worker
+name = "mussheum-submission-notifications"
+main = "src/index.js"
+compatibility_date = "2024-09-25"
+compatibility_flags = ["nodejs_compat"]
+
+# Queue consumer — receives R2 event notifications
+[[queues.consumers]]
+queue = "mussheum-submissions"
+max_batch_size = 10
+max_batch_timeout = 30
+
+# R2 bucket binding — reads submission data directly
+[[r2_buckets]]
+binding = "SUBMISSIONS_BUCKET"
+bucket_name = "your-submissions-bucket"
+
+# Send email binding — update with your destination address
+[[send_email]]
+name = "SEND_EMAIL"
+destination_address = "you@example.com"
+
+# Optional: set sender/recipient via environment variables
+# [vars]
+# SENDER_ADDRESS = "submissions@your-domain.com"
+# RECIPIENT_ADDRESS = "you@example.com"
