@@ -91,6 +91,10 @@ func main() {
 	})
 	writeVisitorCount()
 
+	// Load approved SSH keys and start token purger
+	LoadApprovedKeys()
+	StartTokenPurger()
+
 	s, err := wish.NewServer(
 		wish.WithAddress(fmt.Sprintf("%s:%s", host, port)),
 		wish.WithHostKeyPath(".ssh/id_ed25519"),
@@ -118,11 +122,14 @@ func main() {
 		}
 	}()
 
-	// Start HTTP server for the website
+	// Start HTTP server for the website + auth routes
 	wwwRoot, _ := fs.Sub(wwwFS, "www")
+	httpMux := http.NewServeMux()
+	httpMux.Handle("/auth/", AuthMux())
+	httpMux.Handle("/", http.FileServer(http.FS(wwwRoot)))
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf("%s:%s", host, httpPort),
-		Handler: http.FileServer(http.FS(wwwRoot)),
+		Handler: httpMux,
 	}
 	log.Info("Starting HTTP server", "host", host, "port", httpPort)
 	go func() {
@@ -208,14 +215,38 @@ func tuiMiddleware() wish.Middleware {
 				ConnCount:  currentCount,
 			})
 
+			// Check if user is approved (RC OAuth)
+			requireAuth := os.Getenv("RC_OAUTH_CLIENT_ID") != ""
+			var authURL string
+			if requireAuth && userKey != "anonymous" {
+				if _, approved := IsKeyApproved(userKey); !approved {
+					token := CreatePendingToken(userKey)
+					publicURL := os.Getenv("PUBLIC_URL")
+					if publicURL == "" {
+						publicURL = fmt.Sprintf("http://localhost:%s", httpPort)
+					}
+					authURL = fmt.Sprintf("%s/auth/%s", publicURL, token)
+				}
+			} else if requireAuth && userKey == "anonymous" {
+				wish.Println(s, "An SSH key is required. Please connect with: ssh -i ~/.ssh/id_ed25519 <host>")
+				return
+			}
+
 			// Build command — use compiled binary or bun run
 			var cmd *exec.Cmd
 			tuiCmd := os.Getenv("TUI_CMD")
-			userKeyArg := fmt.Sprintf("--user-key=%s", userKey)
+			args := []string{}
 			if tuiCmd != "" {
-				cmd = exec.Command(tuiCmd, "../tui/tui.tsx", userKeyArg)
+				args = append(args, "../tui/tui.tsx")
+			}
+			args = append(args, fmt.Sprintf("--user-key=%s", userKey))
+			if authURL != "" {
+				args = append(args, fmt.Sprintf("--auth-url=%s", authURL))
+			}
+			if tuiCmd != "" {
+				cmd = exec.Command(tuiCmd, args...)
 			} else {
-				cmd = exec.Command("../tui/mussheum-tui", userKeyArg)
+				cmd = exec.Command("../tui/mussheum-tui", args...)
 			}
 			cmd.Dir = "."
 			cmd.Env = append(os.Environ(),

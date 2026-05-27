@@ -49,12 +49,32 @@ Key differences from the upstream mussheum:
 
 See the [mussheum README](https://github.com/georgemandis/mussheum) for the full config reference.
 
+## Authentication
+
+Access is restricted to Recurse Center members via RC OAuth. When a user SSHs in with an unrecognized key, the TUI shows a one-time auth URL. The user opens it in a browser, authenticates with their RC account, and their SSH key is permanently approved.
+
+If `RC_OAUTH_CLIENT_ID` is not set, authentication is disabled and everyone can access the gallery.
+
+**RC OAuth app setup:**
+
+1. Register an OAuth app at [recurse.com/settings/apps](https://www.recurse.com/settings/apps)
+2. Set the redirect URI to `https://<your-public-url>/auth/callback`
+3. Configure the env vars below
+
+Approved keys are persisted to `/data/approved-keys.json` (inside the Disco volume).
+
 ## Environment Variables
 
-| Variable       | Description                                            |
-|----------------|--------------------------------------------------------|
-| `GITHUB_TOKEN` | GitHub token with Contents + Pull requests write access |
-| `TUI_CMD`      | Override TUI command (default: compiled binary)         |
+All env vars are managed via [Disco](https://disco.cloud/) (`disco env:set`).
+
+| Variable                | Required | Description                                            |
+|-------------------------|----------|--------------------------------------------------------|
+| `RC_OAUTH_CLIENT_ID`    | For auth | RC OAuth app client ID                                 |
+| `RC_OAUTH_CLIENT_SECRET`| For auth | RC OAuth app client secret                             |
+| `PUBLIC_URL`            | For auth | Public-facing URL (e.g. `https://mussheum.example.com`)|
+| `GITHUB_TOKEN`          | For submissions | GitHub token with Contents + Pull requests write access |
+| `TUI_CMD`               | No       | Override TUI command (default: compiled binary)         |
+| `RC_OAUTH_BASE_URL`     | No       | Defaults to `https://www.recurse.com`                  |
 
 ## Development
 
@@ -94,7 +114,17 @@ gallery/
 
 ## Deployment
 
-Hosted on a Raspberry Pi local to the Recurse Center hub. See `Dockerfile` and `fly.toml` for container setup (adaptable to any Docker host).
+Hosted on a Raspberry Pi local to the Recurse Center hub using [Disco](https://disco.cloud/). See `disco.json` for volume and port configuration.
+
+```bash
+# Set env vars
+disco env:set RC_OAUTH_CLIENT_ID=... RC_OAUTH_CLIENT_SECRET=... PUBLIC_URL=https://... GITHUB_TOKEN=...
+
+# Deploy
+disco deploy
+```
+
+The `disco.json` exposes port 2222 (SSH) as port 22 and port 8080 (HTTP for auth + website). A persistent volume at `/data` stores SSH host keys and approved keys.
 
 ## License
 

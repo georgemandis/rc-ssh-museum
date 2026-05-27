@@ -9,10 +9,12 @@ const { values } = parseArgs({
   args: Bun.argv.slice(2),
   options: {
     "user-key": { type: "string" },
+    "auth-url": { type: "string" },
   },
 });
 
 const userKey = values["user-key"] ?? "anonymous";
+const authUrl = values["auth-url"] ?? undefined;
 const baseDir = join(dirname(process.argv[1] ?? "."), "..");
 const galleryDir = join(baseDir, "gallery");
 
@@ -20,7 +22,7 @@ const config = await loadGalleryConfig(galleryDir);
 
 const { waitUntilExit } = render(
   <TerminalInfoProvider>
-    <App userKey={userKey} />
+    <App userKey={userKey} authUrl={authUrl} />
   </TerminalInfoProvider>,
   { alternateScreen: true },
 );

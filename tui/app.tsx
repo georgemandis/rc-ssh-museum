@@ -10,11 +10,13 @@ import { ClosedScreen } from "./components/closed-screen.js";
 import { ArchiveScreen } from "./components/archive-screen.js";
 import { SubscribePrompt } from "./components/subscribe-prompt.js";
 import { SubmitPrompt } from "./components/submit-prompt.js";
+import { AuthScreen } from "./components/auth-screen.js";
 import { loadGallery, loadCuratorNote, loadGalleryConfig, loadArchive, checkGalleryHours, type Artwork, type CuratorNote, type GalleryConfig, type GalleryStatus, type ArchivedExhibition } from "./lib/gallery.js";
 import { join, dirname } from "path";
 import { readFile } from "fs/promises";
 
 type Screen =
+  | { type: "auth" }
   | { type: "splash" }
   | { type: "closed" }
   | { type: "list" }
@@ -24,12 +26,13 @@ type Screen =
 
 type Props = {
   userKey: string;
+  authUrl?: string;
 };
 
-export function App({ userKey }: Props) {
+export function App({ userKey, authUrl }: Props) {
   const { exit } = useApp();
   const { rows, cols } = useTerminalSize();
-  const [screen, setScreen] = useState<Screen>({ type: "splash" });
+  const [screen, setScreen] = useState<Screen>(authUrl ? { type: "auth" } : { type: "splash" });
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [visitorCount, setVisitorCount] = useState<number | null>(null);
@@ -62,6 +65,10 @@ export function App({ userKey }: Props) {
 
   useInput((input, key) => {
     if (subscribing || submitting) return;
+    if (screen.type === "auth") {
+      if (input === "q") exit();
+      return;
+    }
     if (screen.type === "splash" || screen.type === "exit") return;
 
     if (screen.type === "closed") {
@@ -129,6 +136,16 @@ export function App({ userKey }: Props) {
       return () => clearTimeout(t);
     }
   }, [screen.type]);
+
+  if (screen.type === "auth" && authUrl) {
+    return (
+      <AuthScreen
+        authUrl={authUrl}
+        config={config}
+        onApproved={() => setScreen({ type: "splash" })}
+      />
+    );
+  }
 
   if (screen.type === "splash") {
     if (!config) return null;
