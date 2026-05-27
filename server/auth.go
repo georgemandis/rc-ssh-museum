@@ -172,6 +172,12 @@ func handleAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Admin endpoints
+	if parts[0] == "admin" {
+		handleAuthAdmin(w, r, parts)
+		return
+	}
+
 	token := parts[0]
 	action := ""
 	if len(parts) > 1 {
@@ -339,6 +345,50 @@ h1 { color: #c3e88d; }
 <p>Your SSH key has been verified. You can close this tab.</p>
 <p style="color: #676e95;">Your terminal session will update automatically.</p>
 </div></body></html>`, name)
+}
+
+func handleAuthAdmin(w http.ResponseWriter, r *http.Request, parts []string) {
+	adminToken := os.Getenv("ADMIN_TOKEN")
+	if adminToken == "" {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	auth := r.Header.Get("Authorization")
+	if auth != "Bearer "+adminToken {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	action := ""
+	if len(parts) > 1 {
+		action = parts[1]
+	}
+
+	switch action {
+	case "clear-keys":
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		approvedKeysMu.Lock()
+		count := len(approvedKeys)
+		approvedKeys = make(map[string]ApprovedKey)
+		approvedKeysMu.Unlock()
+		saveApprovedKeys()
+
+		logAccess(AccessLogEntry{
+			Event: "admin_clear_keys",
+		})
+		log.Info("Admin cleared all approved keys", "count", count)
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"cleared": count,
+		})
+	default:
+		http.Error(w, "Not found", http.StatusNotFound)
+	}
 }
 
 func handleAuthStatus(w http.ResponseWriter, r *http.Request, token string) {

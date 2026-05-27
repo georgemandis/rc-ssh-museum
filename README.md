@@ -73,8 +73,20 @@ All env vars are managed via [Disco](https://disco.cloud/) (`disco env:set`).
 | `RC_OAUTH_CLIENT_SECRET`| For auth | RC OAuth app client secret                             |
 | `PUBLIC_URL`            | For auth | Public-facing URL (e.g. `https://mussheum.example.com`)|
 | `GITHUB_TOKEN`          | For submissions | GitHub token with Contents + Pull requests write access |
+| `ADMIN_TOKEN`           | No       | Secret token for admin API (see below)                 |
 | `TUI_CMD`               | No       | Override TUI command (default: compiled binary)         |
 | `RC_OAUTH_BASE_URL`     | No       | Defaults to `https://www.recurse.com`                  |
+
+### Admin API
+
+When `ADMIN_TOKEN` is set, admin endpoints are available at `/auth/admin/`. Authenticate with `Authorization: Bearer <ADMIN_TOKEN>`.
+
+**Clear all approved keys** (forces everyone to re-authenticate):
+
+```bash
+curl -X POST https://<your-host>/auth/admin/clear-keys \
+  -H "Authorization: Bearer <your-admin-token>"
+```
 
 ## Development
 
