@@ -1,12 +1,10 @@
 #!/bin/sh
 set -e
 
-# Fly.io: single volume at /data — store SSH keys and access log there
-# Docker Compose: direct volume mounts at /app/server/.ssh and /app/data
+# Persistent volume at /data (managed by disco.json or Fly.io)
 if [ -d /data ]; then
   mkdir -p /data/ssh-keys /data/logs
   # Symlink so the Go server finds its key and log in the expected locations
-  rm -rf /app/server/.ssh
   ln -sfn /data/ssh-keys /app/server/.ssh
   # Touch the log so the symlink target exists
   touch /data/logs/access.log

@@ -39,8 +39,4 @@ ENV TERM=xterm-256color
 EXPOSE 2222
 EXPOSE 8080
 
-# Fly.io: mount volume at /data
-# Docker Compose: mount volumes at /app/server/.ssh and /app/data
-VOLUME ["/app/server/.ssh", "/app/data"]
-
 CMD ["./entrypoint.sh"]
