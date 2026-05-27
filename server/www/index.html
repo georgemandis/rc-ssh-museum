@@ -141,7 +141,7 @@
   <div class="line"></div>
 
   <div class="line line-interactive" tabindex="0" onclick="copyCommand(this)" onkeydown="event.key==='Enter'&&copyCommand(this)">
-    <span class="cmd">ssh </span><span class="arg">mussheum.recurse.com</span>
+    <span class="cmd">ssh </span><span class="arg">mussheum.rcdis.co</span>
     <span class="copy-btn">copy</span>
   </div>
 
@@ -204,7 +204,7 @@
 
   <script>
     function copyCommand(el) {
-      navigator.clipboard.writeText("ssh mussheum.recurse.com").then(() => {
+      navigator.clipboard.writeText("ssh mussheum.rcdis.co").then(() => {
         const btn = el.querySelector(".copy-btn");
         el.classList.add("copied");
         btn.textContent = "copied!";
