@@ -363,13 +363,10 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		name = "Member"
 	}
 
-	// Approve the key
+	// Approve the key (don't delete the pending token — let the TUI's
+	// next status poll find it and see the key is now approved. The
+	// token purger will clean it up after TTL expires.)
 	approveKey(pending.Fingerprint, name)
-
-	// Remove the pending token
-	pendingTokensMu.Lock()
-	delete(pendingTokens, token)
-	pendingTokensMu.Unlock()
 
 	logAccess(AccessLogEntry{
 		Event:   "auth_success",
