@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +19,11 @@
       --mono: "JetBrains Mono", Menlo, Consolas, monospace;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
       font-family: var(--mono);
@@ -26,10 +31,26 @@
       background: #000;
       color: var(--fg);
       min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      /* align-items: center; */
     }
 
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    main {
+      max-width: 50vw;
+      flex: 1;
+      text-align: center;
+      margin: 4rem 0;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
 
     .line {
       display: flex;
@@ -39,7 +60,9 @@
       border-left: 2px solid transparent;
     }
 
-    .line:hover { background: #1a2e1a; }
+    .line:hover {
+      background: #1a2e1a;
+    }
 
     .line-interactive {
       cursor: pointer;
@@ -52,11 +75,30 @@
       outline: none;
     }
 
-    .comment { color: var(--dim); }
-    .cmd { color: var(--accent); margin-right: 0.5ch; opacity: 0.85; }
-    .arg { color: var(--secondary); }
-    .prompt { color: var(--accent); margin-right: 0.5rem; }
-    .output { color: var(--white); padding-left: 1ch; opacity: 0.8; }
+    .comment {
+      color: var(--dim);
+    }
+
+    .cmd {
+      color: var(--accent);
+      margin-right: 0.5ch;
+      opacity: 0.85;
+    }
+
+    .arg {
+      color: var(--secondary);
+    }
+
+    .prompt {
+      color: var(--accent);
+      margin-right: 0.5rem;
+    }
+
+    .output {
+      color: var(--white);
+      padding-left: 1ch;
+      opacity: 0.8;
+    }
 
     .title {
       padding: 2rem 1.5rem 0;
@@ -82,7 +124,9 @@
     }
 
     .line-interactive:hover .copy-btn,
-    .line-interactive:focus .copy-btn { opacity: 1; }
+    .line-interactive:focus .copy-btn {
+      opacity: 1;
+    }
 
     .line-interactive.copied .copy-btn {
       opacity: 1;
@@ -90,7 +134,9 @@
       border-color: var(--accent);
     }
 
-    details { border: none; }
+    details {
+      border: none;
+    }
 
     details summary {
       display: flex;
@@ -103,9 +149,19 @@
       color: var(--dim);
     }
 
-    details summary::-webkit-details-marker { display: none; }
-    details summary::marker { display: none; content: ""; }
-    details summary:hover { background: #1a2e1a; border-left-color: var(--accent); }
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details summary::marker {
+      display: none;
+      content: "";
+    }
+
+    details summary:hover {
+      background: #1a2e1a;
+      border-left-color: var(--accent);
+    }
 
     details summary .fold-icon {
       color: var(--accent);
@@ -113,107 +169,130 @@
       transition: transform 0.15s;
     }
 
-    details[open] summary .fold-icon { transform: rotate(90deg); }
+    details[open] summary .fold-icon {
+      transform: rotate(90deg);
+    }
 
-    .footer { color: var(--dim); font-size: 12px; }
+    .footer {
+      color: var(--dim);
+      font-size: 12px;
+    }
 
     @media (max-width: 480px) {
-      .line { padding: 0 1rem; }
-      .title { padding: 1.5rem 1rem 0; }
-      .tagline { padding: 0.25rem 1rem 0; }
+      .line {
+        padding: 0 1rem;
+      }
+
+      .title {
+        padding: 1.5rem 1rem 0;
+      }
+
+      .tagline {
+        padding: 0.25rem 1rem 0;
+      }
     }
   </style>
 </head>
+
 <body>
+  <main>
+    <a href="/" style="text-decoration: none; color: inherit;"><img src="/recurse.png" alt="RC MuSSHeum"
+        width="100"></a>
+    <a href="/" style="text-decoration: none; color: inherit;">
+      <h1 class="title">RC MuSSHeum</h1>
+    </a>
+    <p class="tagline">an ssh art gallery for the Recurse Center</p>
 
-  <a href="/" style="text-decoration: none; color: inherit;"><h1 class="title">RC MuSSHeum</h1></a>
-  <p class="tagline">an ssh art gallery for the Recurse Center</p>
+    <div class="line"></div>
 
-  <div class="line"></div>
+    <div class="line">
+      <span class="comment"># a community art gallery that lives in your terminal</span>
+    </div>
+    <div class="line">
+      <span class="comment"># open to current and former Recurse Center members</span>
+    </div>
 
-  <div class="line">
-    <span class="comment"># a community art gallery that lives in your terminal</span>
-  </div>
-  <div class="line">
-    <span class="comment"># open to current and former Recurse Center members</span>
-  </div>
+    <div class="line"></div>
 
-  <div class="line"></div>
+    <div class="line line-interactive" tabindex="0" onclick="copyCommand(this)"
+      onkeydown="event.key==='Enter'&&copyCommand(this)">
+      <span class="cmd">ssh </span><span class="arg">mussheum.rcdis.co</span>
+      <span class="copy-btn">copy</span>
+    </div>
 
-  <div class="line line-interactive" tabindex="0" onclick="copyCommand(this)" onkeydown="event.key==='Enter'&&copyCommand(this)">
-    <span class="cmd">ssh </span><span class="arg">mussheum.rcdis.co</span>
-    <span class="copy-btn">copy</span>
-  </div>
+    <div class="line"></div>
 
-  <div class="line"></div>
+    <details>
+      <summary><span class="fold-icon">&#9654;</span> <span class="comment"># more info</span></summary>
 
-  <details>
-    <summary><span class="fold-icon">&#9654;</span> <span class="comment"># more info</span></summary>
+      <div class="line"></div>
 
-  <div class="line"></div>
+      <div class="line">
+        <span class="prompt">$ </span><span class="cmd">cat </span><span class="arg">about.txt</span>
+      </div>
 
-  <div class="line">
-    <span class="prompt">$ </span><span class="cmd">cat </span><span class="arg">about.txt</span>
-  </div>
+      <div class="line"></div>
 
-  <div class="line"></div>
+      <div class="line">
+        <span class="output">RC MuSSHeum is an art gallery accessible over SSH,</span>
+      </div>
+      <div class="line">
+        <span class="output">hosted at the Recurse Center hub.</span>
+      </div>
 
-  <div class="line">
-    <span class="output">RC MuSSHeum is an art gallery accessible over SSH,</span>
-  </div>
-  <div class="line">
-    <span class="output">hosted at the Recurse Center hub.</span>
-  </div>
+      <div class="line"></div>
 
-  <div class="line"></div>
+      <div class="line">
+        <span class="output">You'll need an SSH key and a Recurse Center account to enter.</span>
+      </div>
+      <div class="line">
+        <span class="output">On first visit, you'll be asked to verify your RC identity</span>
+      </div>
+      <div class="line">
+        <span class="output">through a one-time OAuth flow in your browser.</span>
+      </div>
 
-  <div class="line">
-    <span class="output">You'll need an SSH key and a Recurse Center account to enter.</span>
-  </div>
-  <div class="line">
-    <span class="output">On first visit, you'll be asked to verify your RC identity</span>
-  </div>
-  <div class="line">
-    <span class="output">through a one-time OAuth flow in your browser.</span>
-  </div>
+      <div class="line"></div>
 
-  <div class="line"></div>
+      <div class="line">
+        <span class="output">Once verified, your SSH key is remembered and you can</span>
+      </div>
+      <div class="line">
+        <span class="output">visit anytime without re-authenticating.</span>
+      </div>
 
-  <div class="line">
-    <span class="output">Once verified, your SSH key is remembered and you can</span>
-  </div>
-  <div class="line">
-    <span class="output">visit anytime without re-authenticating.</span>
-  </div>
+      <div class="line"></div>
 
-  <div class="line"></div>
+      <div class="line">
+        <span class="comment"># <a href="/submissions">submit</a> artwork directly from the gallery by pressing
+          'u'</span>
+      </div>
 
-  <div class="line">
-    <span class="comment"># submit artwork directly from the gallery by pressing 'u'</span>
-  </div>
+      <div class="line"></div>
 
-  <div class="line"></div>
+    </details>
 
-  </details>
+    <div class="line"></div>
 
-  <div class="line"></div>
+    <div class="line footer">
+      <span class="comment"># powered by <a href="https://github.com/georgemandis/mussheum">mussheum</a> and <a
+          href="https://disco.cloud">disco</a> </span>
+    </div>
 
-  <div class="line footer">
-    <span class="comment"># powered by <a href="https://github.com/georgemandis/mussheum">mussheum</a></span>
-  </div>
-
-  <script>
-    function copyCommand(el) {
-      navigator.clipboard.writeText("ssh mussheum.rcdis.co").then(() => {
-        const btn = el.querySelector(".copy-btn");
-        el.classList.add("copied");
-        btn.textContent = "copied!";
-        setTimeout(() => {
-          el.classList.remove("copied");
-          btn.textContent = "copy";
-        }, 2000);
-      });
-    }
-  </script>
+    <script>
+      function copyCommand(el) {
+        navigator.clipboard.writeText("ssh mussheum.rcdis.co").then(() => {
+          const btn = el.querySelector(".copy-btn");
+          el.classList.add("copied");
+          btn.textContent = "copied!";
+          setTimeout(() => {
+            el.classList.remove("copied");
+            btn.textContent = "copy";
+          }, 2000);
+        });
+      }
+    </script>
+  </main>
 </body>
+
 </html>

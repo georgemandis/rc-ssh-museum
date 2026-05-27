@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +18,11 @@
       --mono: "JetBrains Mono", Menlo, Consolas, monospace;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
       font-family: var(--mono);
@@ -25,10 +30,26 @@
       background: #000;
       color: var(--fg);
       min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      /* align-items: center; */
     }
 
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    main {
+      max-width: 50vw;
+      flex: 1;
+      text-align: center;
+      margin: 4rem 0;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
 
     .line {
       display: flex;
@@ -38,14 +59,38 @@
       border-left: 2px solid transparent;
     }
 
-    .line:hover { background: #1a2e1a; }
+    .line:hover {
+      background: #1a2e1a;
+    }
 
-    .comment { color: var(--dim); }
-    .cmd { color: var(--accent); margin-right: 0.5ch; opacity: 0.85; }
-    .arg { color: var(--secondary); }
-    .prompt { color: var(--accent); margin-right: 0.5rem; }
-    .highlight { color: var(--secondary); }
-    .output { color: var(--white); padding-left: 1ch; opacity: 0.8; }
+    .comment {
+      color: var(--dim);
+    }
+
+    .cmd {
+      color: var(--accent);
+      margin-right: 0.5ch;
+      opacity: 0.85;
+    }
+
+    .arg {
+      color: var(--secondary);
+    }
+
+    .prompt {
+      color: var(--accent);
+      margin-right: 0.5rem;
+    }
+
+    .highlight {
+      color: var(--secondary);
+    }
+
+    .output {
+      color: var(--white);
+      padding-left: 1ch;
+      opacity: 0.8;
+    }
 
     .title {
       padding: 2rem 1.5rem 0;
@@ -59,71 +104,89 @@
       font-style: italic;
     }
 
-    .footer { color: var(--dim); font-size: 12px; }
+    .footer {
+      color: var(--dim);
+      font-size: 12px;
+    }
 
     @media (max-width: 480px) {
-      .line { padding: 0 1rem; }
-      .title { padding: 1.5rem 1rem 0; }
-      .tagline { padding: 0.25rem 1rem 0; }
+      .line {
+        padding: 0 1rem;
+      }
+
+      .title {
+        padding: 1.5rem 1rem 0;
+      }
+
+      .tagline {
+        padding: 0.25rem 1rem 0;
+      }
     }
   </style>
 </head>
+
 <body>
+  <main>
+    <a href="/" style="text-decoration: none; color: inherit;"></a><img src="/recurse.png" alt="RC MuSSHeum"
+      width="100"></a>
+    <a href="/" style="text-decoration: none; color: inherit;">
+      <h1 class="title">RC MuSSHeum</h1>
+    </a>
+    <p class="tagline">an ssh art gallery for the Recurse Center</p>
 
-  <a href="/" style="text-decoration: none; color: inherit;"><h1 class="title">RC MuSSHeum</h1></a>
-  <p class="tagline">an ssh art gallery for the Recurse Center</p>
+    <div class="line"></div>
 
-  <div class="line"></div>
+    <div class="line">
+      <span class="highlight"># submit artwork</span>
+    </div>
 
-  <div class="line">
-    <span class="highlight"># submit artwork</span>
-  </div>
+    <div class="line"></div>
 
-  <div class="line"></div>
+    <div class="line">
+      <span class="output">Submissions are handled directly from the gallery.</span>
+    </div>
+    <div class="line">
+      <span class="output">SSH in and press <span style="color: var(--accent);">u</span> to submit your work.</span>
+    </div>
 
-  <div class="line">
-    <span class="output">Submissions are handled directly from the gallery.</span>
-  </div>
-  <div class="line">
-    <span class="output">SSH in and press <span style="color: var(--accent);">u</span> to submit your work.</span>
-  </div>
+    <div class="line"></div>
 
-  <div class="line"></div>
+    <div class="line">
+      <span class="prompt">$ </span><span class="cmd">ssh </span><span class="arg">mussheum.rcdis.co</span>
+    </div>
 
-  <div class="line">
-    <span class="prompt">$ </span><span class="cmd">ssh </span><span class="arg">mussheum.rcdis.co</span>
-  </div>
+    <div class="line"></div>
 
-  <div class="line"></div>
+    <div class="line">
+      <span class="comment"># you'll be prompted for a title, artist name, image URL,</span>
+    </div>
+    <div class="line">
+      <span class="comment"># an optional statement, and an optional artist URL.</span>
+    </div>
+    <div class="line">
+      <span class="comment"># your submission opens a pull request for review.</span>
+    </div>
 
-  <div class="line">
-    <span class="comment"># you'll be prompted for a title, artist name, image URL,</span>
-  </div>
-  <div class="line">
-    <span class="comment"># an optional statement, and an optional artist URL.</span>
-  </div>
-  <div class="line">
-    <span class="comment"># your submission opens a pull request for review.</span>
-  </div>
+    <div class="line"></div>
 
-  <div class="line"></div>
+    <div class="line">
+      <span class="comment"># you must be a Recurse Center member to submit.</span>
+    </div>
 
-  <div class="line">
-    <span class="comment"># you must be a Recurse Center member to submit.</span>
-  </div>
+    <div class="line"></div>
 
-  <div class="line"></div>
+    <div class="line">
+      <span class="comment"># <a href="/">back to homepage</a></span>
+    </div>
 
-  <div class="line">
-    <span class="comment"># <a href="/">back to homepage</a></span>
-  </div>
+    <div class="line"></div>
+    <div class="line"></div>
 
-  <div class="line"></div>
-  <div class="line"></div>
-
-  <div class="line footer">
-    <span class="comment"># powered by <a href="https://github.com/georgemandis/mussheum">mussheum</a></span>
-  </div>
-
+    <div class="line footer">
+      <span class="comment"># powered by <a href="https://github.com/georgemandis/mussheum">mussheum</a> and <a
+          href="https://disco.cloud">disco</a> </span>
+    </div>
+  </main>
 </body>
+
 </html>
