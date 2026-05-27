@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>mussheum — an SSH art gallery</title>
+  <title>RC MuSSHeum — an SSH art gallery</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -12,9 +12,9 @@
       --fg: #d0d0d0;
       --white: #e8e8e8;
       --dim: #676e95;
-      --accent: #c792ea;
-      --secondary: #c3e88d;
-      --cyan: #8ae9fd;
+      --accent: #5af78e;
+      --secondary: #50fa7b;
+      --green-dark: #2d6e3f;
       --mono: "JetBrains Mono", Menlo, Consolas, monospace;
     }
 
@@ -39,7 +39,7 @@
       border-left: 2px solid transparent;
     }
 
-    .line:hover { background: #323650; }
+    .line:hover { background: #1a2e1a; }
 
     .line-interactive {
       cursor: pointer;
@@ -47,21 +47,21 @@
 
     .line-interactive:hover,
     .line-interactive:focus {
-      background: #323650;
+      background: #1a2e1a;
       border-left-color: var(--accent);
       outline: none;
     }
 
     .comment { color: var(--dim); }
-    .cmd { color: var(--cyan); margin-right: 0.5ch; opacity: 0.85; }
-    .arg { color: var(--accent); }
-    .prompt { color: var(--secondary); margin-right: 0.5rem; }
+    .cmd { color: var(--accent); margin-right: 0.5ch; opacity: 0.85; }
+    .arg { color: var(--secondary); }
+    .prompt { color: var(--accent); margin-right: 0.5rem; }
     .output { color: var(--white); padding-left: 1ch; opacity: 0.8; }
 
     .title {
       padding: 2rem 1.5rem 0;
       font-size: 1.5rem;
-      color: var(--cyan);
+      color: var(--accent);
     }
 
     .tagline {
@@ -74,7 +74,7 @@
       margin-left: 1.5ch;
       color: var(--dim);
       font-size: 11px;
-      border: 1px solid #3b3f5c;
+      border: 1px solid #3b5c3b;
       padding: 0.15rem 0.5rem;
       border-radius: 3px;
       opacity: 0;
@@ -105,10 +105,10 @@
 
     details summary::-webkit-details-marker { display: none; }
     details summary::marker { display: none; content: ""; }
-    details summary:hover { background: #323650; border-left-color: var(--secondary); }
+    details summary:hover { background: #1a2e1a; border-left-color: var(--accent); }
 
     details summary .fold-icon {
-      color: var(--secondary);
+      color: var(--accent);
       margin-right: 0.5rem;
       transition: transform 0.15s;
     }
@@ -126,21 +126,22 @@
 </head>
 <body>
 
-  <!-- Replace "mussheum" with your gallery name -->
-  <a href="/" style="text-decoration: none; color: inherit;"><h1 class="title">mussheum</h1></a>
-  <p class="tagline">an ssh art gallery</p>
+  <a href="/" style="text-decoration: none; color: inherit;"><h1 class="title">RC MuSSHeum</h1></a>
+  <p class="tagline">an ssh art gallery for the Recurse Center</p>
 
   <div class="line"></div>
 
   <div class="line">
-    <span class="comment"># an art gallery that lives in your terminal</span>
+    <span class="comment"># a community art gallery that lives in your terminal</span>
+  </div>
+  <div class="line">
+    <span class="comment"># open to current and former Recurse Center members</span>
   </div>
 
   <div class="line"></div>
 
-  <!-- Replace "your-host.example.com" with your SSH hostname -->
   <div class="line line-interactive" tabindex="0" onclick="copyCommand(this)" onkeydown="event.key==='Enter'&&copyCommand(this)">
-    <span class="cmd">ssh </span><span class="arg">your-host.example.com</span>
+    <span class="cmd">ssh </span><span class="arg">mussheum.recurse.com</span>
     <span class="copy-btn">copy</span>
   </div>
 
@@ -158,16 +159,37 @@
   <div class="line"></div>
 
   <div class="line">
-    <span class="output">Customize this page with information about your gallery.</span>
+    <span class="output">RC MuSSHeum is an art gallery accessible over SSH,</span>
   </div>
   <div class="line">
-    <span class="output">Edit server/www/index.html to change the content.</span>
+    <span class="output">hosted at the Recurse Center hub.</span>
   </div>
 
   <div class="line"></div>
 
   <div class="line">
-    <span class="output">Submit artwork: </span><span class="cmd">ssh </span><span class="arg">your-host.example.com</span> <span class="cmd">submit</span> <span style="color: var(--dim);">&lt;</span> <span style="color: var(--white);">submission.zip</span>
+    <span class="output">You'll need an SSH key and a Recurse Center account to enter.</span>
+  </div>
+  <div class="line">
+    <span class="output">On first visit, you'll be asked to verify your RC identity</span>
+  </div>
+  <div class="line">
+    <span class="output">through a one-time OAuth flow in your browser.</span>
+  </div>
+
+  <div class="line"></div>
+
+  <div class="line">
+    <span class="output">Once verified, your SSH key is remembered and you can</span>
+  </div>
+  <div class="line">
+    <span class="output">visit anytime without re-authenticating.</span>
+  </div>
+
+  <div class="line"></div>
+
+  <div class="line">
+    <span class="comment"># submit artwork directly from the gallery by pressing 'u'</span>
   </div>
 
   <div class="line"></div>
@@ -181,8 +203,8 @@
   </div>
 
   <script>
-    function copyCommand(el, text) {
-      navigator.clipboard.writeText(text || "ssh your-host.example.com").then(() => {
+    function copyCommand(el) {
+      navigator.clipboard.writeText("ssh mussheum.recurse.com").then(() => {
         const btn = el.querySelector(".copy-btn");
         el.classList.add("copied");
         btn.textContent = "copied!";
