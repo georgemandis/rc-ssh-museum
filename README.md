@@ -53,7 +53,7 @@ See the [mussheum README](https://github.com/georgemandis/mussheum) for the full
 
 Access is restricted to Recurse Center members via RC OAuth. When a user SSHs in with an unrecognized key, the TUI shows a one-time auth URL. The user opens it in a browser, authenticates with their RC account, and their SSH key is permanently approved.
 
-If `RC_OAUTH_CLIENT_ID` is not set, authentication is disabled and everyone can access the gallery.
+Auth is configured via the `auth` block in `gallery/config.json` (OAuth endpoints) and env vars (secrets). If the `auth` block is missing or `OAUTH_CLIENT_ID` is not set, authentication is disabled and everyone can access the gallery.
 
 **RC OAuth app setup:**
 
@@ -69,13 +69,12 @@ All env vars are managed via [Disco](https://disco.cloud/) (`disco env:set`).
 
 | Variable                | Required | Description                                            |
 |-------------------------|----------|--------------------------------------------------------|
-| `RC_OAUTH_CLIENT_ID`    | For auth | RC OAuth app client ID                                 |
-| `RC_OAUTH_CLIENT_SECRET`| For auth | RC OAuth app client secret                             |
+| `OAUTH_CLIENT_ID`       | For auth | OAuth app client ID                                    |
+| `OAUTH_CLIENT_SECRET`   | For auth | OAuth app client secret                                |
 | `PUBLIC_URL`            | For auth | Public-facing URL (e.g. `https://mussheum.example.com`)|
 | `GITHUB_TOKEN`          | For submissions | GitHub token with Contents + Pull requests write access |
 | `ADMIN_TOKEN`           | No       | Secret token for admin API (see below)                 |
 | `TUI_CMD`               | No       | Override TUI command (default: compiled binary)         |
-| `RC_OAUTH_BASE_URL`     | No       | Defaults to `https://www.recurse.com`                  |
 
 ### Admin API
 

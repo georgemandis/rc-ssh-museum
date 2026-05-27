@@ -73,6 +73,13 @@ export type GalleryConfig = {
   splash?: "bigtext" | "logo" | "ascii" | "image";
   submitMethod?: "github-pr";
   submitRepo?: string;
+  auth?: {
+    provider: "oauth";
+    authorizeUrl: string;
+    tokenUrl: string;
+    profileUrl: string;
+    profileNameField?: string;
+  };
 };
 
 const defaultConfig: GalleryConfig = {

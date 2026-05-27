@@ -91,9 +91,12 @@ func main() {
 	})
 	writeVisitorCount()
 
-	// Load approved SSH keys and start token purger
-	LoadApprovedKeys()
-	StartTokenPurger()
+	// Load auth config and approved keys
+	LoadAuthConfig("../gallery/config.json")
+	if IsAuthEnabled() {
+		LoadApprovedKeys()
+		StartTokenPurger()
+	}
 
 	s, err := wish.NewServer(
 		wish.WithAddress(fmt.Sprintf("%s:%s", host, port)),
@@ -125,7 +128,9 @@ func main() {
 	// Start HTTP server for the website + auth routes
 	wwwRoot, _ := fs.Sub(wwwFS, "www")
 	httpMux := http.NewServeMux()
-	httpMux.Handle("/auth/", AuthMux())
+	if IsAuthEnabled() {
+		httpMux.Handle("/auth/", AuthMux())
+	}
 	httpMux.Handle("/", http.FileServer(http.FS(wwwRoot)))
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf("%s:%s", host, httpPort),
@@ -215,10 +220,13 @@ func tuiMiddleware() wish.Middleware {
 				ConnCount:  currentCount,
 			})
 
-			// Check if user is approved (RC OAuth)
-			requireAuth := os.Getenv("RC_OAUTH_CLIENT_ID") != ""
+			// Check if user is approved (OAuth)
 			var authURL string
-			if requireAuth && userKey != "anonymous" {
+			if IsAuthEnabled() {
+				if userKey == "anonymous" {
+					wish.Println(s, "An SSH key is required. Please connect with: ssh -i ~/.ssh/id_ed25519 <host>")
+					return
+				}
 				if _, approved := IsKeyApproved(userKey); !approved {
 					token := CreatePendingToken(userKey)
 					publicURL := os.Getenv("PUBLIC_URL")
@@ -227,9 +235,6 @@ func tuiMiddleware() wish.Middleware {
 					}
 					authURL = fmt.Sprintf("%s/auth/%s", publicURL, token)
 				}
-			} else if requireAuth && userKey == "anonymous" {
-				wish.Println(s, "An SSH key is required. Please connect with: ssh -i ~/.ssh/id_ed25519 <host>")
-				return
 			}
 
 			// Build command — use compiled binary or bun run

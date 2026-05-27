@@ -22,11 +22,19 @@ const (
 	approvedFile   = "/data/approved-keys.json"
 )
 
-// ApprovedKey stores a verified RC member's SSH key.
+// AuthConfig holds the OAuth settings read from gallery/config.json.
+type AuthConfig struct {
+	Provider         string `json:"provider"`
+	AuthorizeURL     string `json:"authorizeUrl"`
+	TokenURL         string `json:"tokenUrl"`
+	ProfileURL       string `json:"profileUrl"`
+	ProfileNameField string `json:"profileNameField"`
+}
+
+// ApprovedKey stores a verified member's SSH key.
 type ApprovedKey struct {
 	Fingerprint string `json:"fingerprint"`
 	Name        string `json:"name"`
-	RCUserID    int    `json:"rc_user_id"`
 	ApprovedAt  string `json:"approved_at"`
 }
 
@@ -42,12 +50,39 @@ var (
 
 	pendingTokens   = make(map[string]PendingToken) // token -> PendingToken
 	pendingTokensMu sync.Mutex
+
+	authConfig *AuthConfig
 )
 
 func generateToken() string {
 	b := make([]byte, 16)
 	rand.Read(b)
 	return hex.EncodeToString(b)
+}
+
+// IsAuthEnabled returns true if OAuth auth is configured.
+func IsAuthEnabled() bool {
+	return authConfig != nil && os.Getenv("OAUTH_CLIENT_ID") != ""
+}
+
+// LoadAuthConfig loads the auth section from gallery config.
+func LoadAuthConfig(galleryConfigPath string) {
+	data, err := os.ReadFile(galleryConfigPath)
+	if err != nil {
+		return
+	}
+
+	var cfg struct {
+		Auth *AuthConfig `json:"auth"`
+	}
+	if err := json.Unmarshal(data, &cfg); err != nil {
+		return
+	}
+
+	if cfg.Auth != nil && cfg.Auth.Provider == "oauth" && cfg.Auth.AuthorizeURL != "" {
+		authConfig = cfg.Auth
+		log.Info("OAuth auth enabled", "authorizeUrl", authConfig.AuthorizeURL)
+	}
 }
 
 // IsKeyApproved checks if an SSH key fingerprint is on the approved list.
@@ -122,12 +157,11 @@ func saveApprovedKeys() {
 	}
 }
 
-func approveKey(fingerprint string, name string, rcUserID int) {
+func approveKey(fingerprint string, name string) {
 	approvedKeysMu.Lock()
 	approvedKeys[fingerprint] = ApprovedKey{
 		Fingerprint: fingerprint,
 		Name:        name,
-		RCUserID:    rcUserID,
 		ApprovedAt:  time.Now().UTC().Format(time.RFC3339),
 	}
 	approvedKeysMu.Unlock()
@@ -158,7 +192,7 @@ func AuthMux() http.Handler {
 }
 
 func handleAuth(w http.ResponseWriter, r *http.Request) {
-	// Parse: /auth/callback, /auth/{token}, /auth/{token}/status
+	// Parse: /auth/callback, /auth/admin/..., /auth/{token}, /auth/{token}/status
 	path := strings.TrimPrefix(r.URL.Path, "/auth/")
 	parts := strings.SplitN(path, "/", 2)
 	if len(parts) == 0 || parts[0] == "" {
@@ -204,15 +238,15 @@ func handleAuthRedirect(w http.ResponseWriter, r *http.Request, token string) {
 		return
 	}
 
-	clientID := os.Getenv("RC_OAUTH_CLIENT_ID")
-	if clientID == "" {
+	if authConfig == nil {
 		http.Error(w, "OAuth not configured", http.StatusInternalServerError)
 		return
 	}
 
-	baseURL := os.Getenv("RC_OAUTH_BASE_URL")
-	if baseURL == "" {
-		baseURL = "https://www.recurse.com"
+	clientID := os.Getenv("OAUTH_CLIENT_ID")
+	if clientID == "" {
+		http.Error(w, "OAuth not configured", http.StatusInternalServerError)
+		return
 	}
 
 	publicURL := os.Getenv("PUBLIC_URL")
@@ -222,8 +256,8 @@ func handleAuthRedirect(w http.ResponseWriter, r *http.Request, token string) {
 
 	redirectURI := fmt.Sprintf("%s/auth/callback", publicURL)
 
-	authURL := fmt.Sprintf("%s/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code&state=%s",
-		baseURL,
+	authURL := fmt.Sprintf("%s?client_id=%s&redirect_uri=%s&response_type=code&state=%s",
+		authConfig.AuthorizeURL,
 		url.QueryEscape(clientID),
 		url.QueryEscape(redirectURI),
 		url.QueryEscape(token),
@@ -254,12 +288,13 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clientID := os.Getenv("RC_OAUTH_CLIENT_ID")
-	clientSecret := os.Getenv("RC_OAUTH_CLIENT_SECRET")
-	baseURL := os.Getenv("RC_OAUTH_BASE_URL")
-	if baseURL == "" {
-		baseURL = "https://www.recurse.com"
+	if authConfig == nil {
+		http.Error(w, "OAuth not configured", http.StatusInternalServerError)
+		return
 	}
+
+	clientID := os.Getenv("OAUTH_CLIENT_ID")
+	clientSecret := os.Getenv("OAUTH_CLIENT_SECRET")
 	publicURL := os.Getenv("PUBLIC_URL")
 	if publicURL == "" {
 		publicURL = "https://" + r.Host
@@ -267,8 +302,8 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 
 	redirectURI := fmt.Sprintf("%s/auth/callback", publicURL)
 
-	// Exchange code for token
-	tokenResp, err := http.PostForm(baseURL+"/oauth/token", url.Values{
+	// Exchange code for access token
+	tokenResp, err := http.PostForm(authConfig.TokenURL, url.Values{
 		"grant_type":    {"authorization_code"},
 		"code":          {code},
 		"redirect_uri":  {redirectURI},
@@ -291,36 +326,27 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fetch RC profile
-	profileReq, _ := http.NewRequest("GET", baseURL+"/api/v1/profiles/me", nil)
+	// Fetch user profile
+	profileReq, _ := http.NewRequest("GET", authConfig.ProfileURL, nil)
 	profileReq.Header.Set("Authorization", "Bearer "+tokenData.AccessToken)
 	profileResp, err := http.DefaultClient.Do(profileReq)
 	if err != nil {
-		log.Error("Failed to fetch RC profile", "error", err)
+		log.Error("Failed to fetch user profile", "error", err)
 		http.Error(w, "Could not verify your identity. Please try again.", http.StatusInternalServerError)
 		return
 	}
 	defer profileResp.Body.Close()
 
 	body, _ := io.ReadAll(profileResp.Body)
-	var profile struct {
-		ID        int    `json:"id"`
-		FirstName string `json:"first_name"`
-		LastName  string `json:"last_name"`
-	}
-	if err := json.Unmarshal(body, &profile); err != nil {
-		log.Error("Failed to parse RC profile", "error", err, "body", string(body))
-		http.Error(w, "Could not verify your identity. Please try again.", http.StatusInternalServerError)
-		return
-	}
 
-	name := strings.TrimSpace(profile.FirstName + " " + profile.LastName)
+	// Extract name from profile using configured field
+	name := extractName(body, authConfig.ProfileNameField)
 	if name == "" {
-		name = "RC Member"
+		name = "Member"
 	}
 
 	// Approve the key
-	approveKey(pending.Fingerprint, name, profile.ID)
+	approveKey(pending.Fingerprint, name)
 
 	// Remove the pending token
 	pendingTokensMu.Lock()
@@ -345,6 +371,41 @@ h1 { color: #c3e88d; }
 <p>Your SSH key has been verified. You can close this tab.</p>
 <p style="color: #676e95;">Your terminal session will update automatically.</p>
 </div></body></html>`, name)
+}
+
+// extractName pulls a display name from the profile JSON.
+// Supports dotted paths like "first_name" or compound names.
+// Falls back to common fields: name, login, first_name + last_name, username.
+func extractName(body []byte, field string) string {
+	var profile map[string]interface{}
+	if err := json.Unmarshal(body, &profile); err != nil {
+		return ""
+	}
+
+	// Try the configured field first
+	if field != "" {
+		if v, ok := profile[field]; ok {
+			if s, ok := v.(string); ok && s != "" {
+				return s
+			}
+		}
+	}
+
+	// Try compound first_name + last_name
+	first, _ := profile["first_name"].(string)
+	last, _ := profile["last_name"].(string)
+	if combined := strings.TrimSpace(first + " " + last); combined != "" {
+		return combined
+	}
+
+	// Try common fields
+	for _, key := range []string{"name", "login", "username", "display_name"} {
+		if v, ok := profile[key].(string); ok && v != "" {
+			return v
+		}
+	}
+
+	return ""
 }
 
 func handleAuthAdmin(w http.ResponseWriter, r *http.Request, parts []string) {
@@ -399,9 +460,6 @@ func handleAuthStatus(w http.ResponseWriter, r *http.Request, token string) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if !pendingOk {
-		// Token gone — either expired or already approved. Check if the fingerprint is approved.
-		// We can't know the fingerprint from the token alone if it's been purged,
-		// so return approved=false and let the TUI handle reconnection.
 		json.NewEncoder(w).Encode(map[string]interface{}{"approved": false, "expired": true})
 		return
 	}

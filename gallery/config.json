@@ -11,5 +11,12 @@
   "sortOrder": "newest",
   "splash": "logo",
   "submitMethod": "github-pr",
-  "submitRepo": "georgemandis/rc-ssh-museum"
+  "submitRepo": "georgemandis/rc-ssh-museum",
+  "auth": {
+    "provider": "oauth",
+    "authorizeUrl": "https://www.recurse.com/oauth/authorize",
+    "tokenUrl": "https://www.recurse.com/oauth/token",
+    "profileUrl": "https://www.recurse.com/api/v1/profiles/me",
+    "profileNameField": "first_name"
+  }
 }
