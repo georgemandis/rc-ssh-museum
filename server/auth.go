@@ -60,9 +60,20 @@ func generateToken() string {
 	return hex.EncodeToString(b)
 }
 
-// IsAuthEnabled returns true if OAuth auth is configured.
+// IsAuthEnabled returns true if any auth mode is configured.
 func IsAuthEnabled() bool {
-	return authConfig != nil && os.Getenv("OAUTH_CLIENT_ID") != ""
+	if authConfig == nil {
+		return false
+	}
+	if authConfig.Provider == "allowlist" {
+		return true
+	}
+	return authConfig.Provider == "oauth" && os.Getenv("OAUTH_CLIENT_ID") != ""
+}
+
+// IsOAuthEnabled returns true if OAuth (not just allowlist) is configured.
+func IsOAuthEnabled() bool {
+	return authConfig != nil && authConfig.Provider == "oauth" && os.Getenv("OAUTH_CLIENT_ID") != ""
 }
 
 // LoadAuthConfig loads the auth section from gallery config.
@@ -79,7 +90,14 @@ func LoadAuthConfig(galleryConfigPath string) {
 		return
 	}
 
-	if cfg.Auth != nil && cfg.Auth.Provider == "oauth" && cfg.Auth.AuthorizeURL != "" {
+	if cfg.Auth == nil {
+		return
+	}
+
+	if cfg.Auth.Provider == "allowlist" {
+		authConfig = cfg.Auth
+		log.Info("Allowlist auth enabled")
+	} else if cfg.Auth.Provider == "oauth" && cfg.Auth.AuthorizeURL != "" {
 		authConfig = cfg.Auth
 		log.Info("OAuth auth enabled", "authorizeUrl", authConfig.AuthorizeURL)
 	}
@@ -427,6 +445,23 @@ func handleAuthAdmin(w http.ResponseWriter, r *http.Request, parts []string) {
 	}
 
 	switch action {
+	case "keys":
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		approvedKeysMu.RLock()
+		keys := make([]ApprovedKey, 0, len(approvedKeys))
+		for _, k := range approvedKeys {
+			keys = append(keys, k)
+		}
+		approvedKeysMu.RUnlock()
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"count": len(keys),
+			"keys":  keys,
+		})
 	case "clear-keys":
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

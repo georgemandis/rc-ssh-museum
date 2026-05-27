@@ -128,7 +128,7 @@ func main() {
 	// Start HTTP server for the website + auth routes
 	wwwRoot, _ := fs.Sub(wwwFS, "www")
 	httpMux := http.NewServeMux()
-	if IsAuthEnabled() {
+	if IsOAuthEnabled() || os.Getenv("ADMIN_TOKEN") != "" {
 		httpMux.Handle("/auth/", AuthMux())
 	}
 	httpMux.Handle("/", http.FileServer(http.FS(wwwRoot)))
@@ -220,7 +220,7 @@ func tuiMiddleware() wish.Middleware {
 				ConnCount:  currentCount,
 			})
 
-			// Check if user is approved (OAuth)
+			// Check if user is approved
 			var authURL string
 			if IsAuthEnabled() {
 				if userKey == "anonymous" {
@@ -228,12 +228,17 @@ func tuiMiddleware() wish.Middleware {
 					return
 				}
 				if _, approved := IsKeyApproved(userKey); !approved {
-					token := CreatePendingToken(userKey)
-					publicURL := os.Getenv("PUBLIC_URL")
-					if publicURL == "" {
-						publicURL = fmt.Sprintf("http://localhost:%s", httpPort)
+					if IsOAuthEnabled() {
+						token := CreatePendingToken(userKey)
+						publicURL := os.Getenv("PUBLIC_URL")
+						if publicURL == "" {
+							publicURL = fmt.Sprintf("http://localhost:%s", httpPort)
+						}
+						authURL = fmt.Sprintf("%s/auth/%s", publicURL, token)
+					} else {
+						wish.Println(s, "Access denied. Your SSH key is not on the approved list.")
+						return
 					}
-					authURL = fmt.Sprintf("%s/auth/%s", publicURL, token)
 				}
 			}
 
