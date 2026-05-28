@@ -226,7 +226,7 @@ export function SubmitPrompt({ config, onDone }: Props) {
       return;
     }
 
-    if (input && input.length === 1 && !key.ctrl && !key.meta) {
+    if (input && !key.ctrl && !key.meta) {
       setForm((f) => ({ ...f, [field]: f[field] + input }));
     }
   });

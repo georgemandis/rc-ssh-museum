@@ -43,7 +43,7 @@ export function SubscribePrompt({ config, onDone }: Props) {
         setEmail((e) => e.slice(0, -1));
         return;
       }
-      if (input && input.length === 1 && !key.ctrl && !key.meta) {
+      if (input && !key.ctrl && !key.meta) {
         setEmail((e) => e + input);
       }
       return;
@@ -58,7 +58,7 @@ export function SubscribePrompt({ config, onDone }: Props) {
         setName((n) => n.slice(0, -1));
         return;
       }
-      if (input && input.length === 1 && !key.ctrl && !key.meta) {
+      if (input && !key.ctrl && !key.meta) {
         setName((n) => n + input);
       }
     }
