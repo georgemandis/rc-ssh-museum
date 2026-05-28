@@ -270,6 +270,29 @@
 
       <div class="line"></div>
 
+      <div class="line">
+        <span class="prompt">$ </span><span class="cmd">cat </span><span class="arg">fingerprint.txt</span>
+      </div>
+
+      <div class="line"></div>
+
+      <div class="line">
+        <span class="output">ED25519 SHA256:j9Kgox6uc82PbBqwbwn49t9BenFkj7qI94EF1Jnu4xA</span>
+      </div>
+
+      <div class="line"></div>
+
+      <div class="line">
+        <span class="comment"># add to ~/.ssh/known_hosts to skip the fingerprint prompt:</span>
+      </div>
+      <div class="line line-interactive" tabindex="0" onclick="copyKnownHost(this)"
+        onkeydown="event.key==='Enter'&&copyKnownHost(this)">
+        <span class="output" style="font-size: 11px; opacity: 0.6;">mussheum.rcdis.co ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBNir8bK3ALyohtk/3grC+sg99kOZ9Lg4R3RLFX9orIs</span>
+        <span class="copy-btn">copy</span>
+      </div>
+
+      <div class="line"></div>
+
     </details>
 
     <div class="line"></div>
@@ -282,6 +305,18 @@
     <script>
       function copyCommand(el) {
         navigator.clipboard.writeText("ssh mussheum.rcdis.co").then(() => {
+          const btn = el.querySelector(".copy-btn");
+          el.classList.add("copied");
+          btn.textContent = "copied!";
+          setTimeout(() => {
+            el.classList.remove("copied");
+            btn.textContent = "copy";
+          }, 2000);
+        });
+      }
+
+      function copyKnownHost(el) {
+        navigator.clipboard.writeText("mussheum.rcdis.co ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBNir8bK3ALyohtk/3grC+sg99kOZ9Lg4R3RLFX9orIs").then(() => {
           const btn = el.querySelector(".copy-btn");
           el.classList.add("copied");
           btn.textContent = "copied!";
