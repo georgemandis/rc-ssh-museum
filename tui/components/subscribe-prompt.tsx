@@ -1,4 +1,5 @@
 import { Box, Text, useInput } from "ink";
+import TextInput from "ink-text-input";
 import { useState } from "react";
 import type { GalleryConfig } from "../lib/gallery.js";
 
@@ -16,7 +17,7 @@ export function SubscribePrompt({ config, onDone }: Props) {
   const [errorMsg, setErrorMsg] = useState("");
   const accent = config?.accentColor ?? "cyan";
 
-  useInput((input, key) => {
+  useInput((_input, key) => {
     if (step === "success" || step === "error") {
       onDone();
       return;
@@ -28,41 +29,20 @@ export function SubscribePrompt({ config, onDone }: Props) {
       onDone();
       return;
     }
+  });
 
-    if (step === "email") {
-      if (key.return) {
-        if (!email.includes("@") || !email.includes(".")) {
-          setErrorMsg("Please enter a valid email address.");
-          setStep("error");
-          return;
-        }
-        setStep("name");
-        return;
-      }
-      if (key.backspace || key.delete) {
-        setEmail((e) => e.slice(0, -1));
-        return;
-      }
-      if (input && !key.ctrl && !key.meta) {
-        setEmail((e) => e + input);
-      }
+  function handleEmailSubmit() {
+    if (!email.includes("@") || !email.includes(".")) {
+      setErrorMsg("Please enter a valid email address.");
+      setStep("error");
       return;
     }
+    setStep("name");
+  }
 
-    if (step === "name") {
-      if (key.return) {
-        submit(email, name.trim() || undefined);
-        return;
-      }
-      if (key.backspace || key.delete) {
-        setName((n) => n.slice(0, -1));
-        return;
-      }
-      if (input && !key.ctrl && !key.meta) {
-        setName((n) => n + input);
-      }
-    }
-  });
+  function handleNameSubmit() {
+    submit(email, name.trim() || undefined);
+  }
 
   async function submit(addr: string, subscriberName?: string) {
     setStep("submitting");
@@ -146,8 +126,7 @@ export function SubscribePrompt({ config, onDone }: Props) {
       <Box flexDirection="column" alignItems="center">
         <Box>
           <Text dimColor>Name (optional): </Text>
-          <Text>{name}</Text>
-          <Text color={accent}>█</Text>
+          <TextInput value={name} onChange={setName} onSubmit={handleNameSubmit} />
         </Box>
         <Text dimColor>Press enter to subscribe, esc to cancel</Text>
       </Box>
@@ -158,8 +137,7 @@ export function SubscribePrompt({ config, onDone }: Props) {
     <Box flexDirection="column" alignItems="center">
       <Box>
         <Text dimColor>Email: </Text>
-        <Text>{email}</Text>
-        <Text color={accent}>█</Text>
+        <TextInput value={email} onChange={setEmail} onSubmit={handleEmailSubmit} />
       </Box>
       <Text dimColor>Press enter to continue, esc to cancel</Text>
     </Box>

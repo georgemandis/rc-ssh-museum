@@ -1,4 +1,5 @@
 import { Box, Text, useInput } from "ink";
+import TextInput from "ink-text-input";
 import { useState } from "react";
 import type { GalleryConfig } from "../lib/gallery.js";
 
@@ -162,6 +163,16 @@ async function createGitHubPR(
   return prData.html_url;
 }
 
+const fieldOrder: Step[] = ["title", "artist", "imageUrl", "statement", "artistUrl", "confirm"];
+
+const fieldLabels: Record<string, { label: string; required: boolean }> = {
+  title: { label: "Title", required: true },
+  artist: { label: "Artist name", required: true },
+  imageUrl: { label: "Image URL", required: true },
+  statement: { label: "Statement (optional)", required: false },
+  artistUrl: { label: "Artist URL (optional)", required: false },
+};
+
 export function SubmitPrompt({ config, onDone }: Props) {
   const [step, setStep] = useState<Step>("title");
   const [form, setForm] = useState<FormData>({
@@ -184,6 +195,8 @@ export function SubmitPrompt({ config, onDone }: Props) {
     return null;
   };
 
+  const isInputStep = currentField() !== null;
+
   useInput((input, key) => {
     if (step === "success" || step === "error") {
       onDone();
@@ -204,32 +217,35 @@ export function SubmitPrompt({ config, onDone }: Props) {
       }
       return;
     }
+  }, { isActive: !isInputStep });
 
+  // Escape still needs to work during input steps
+  useInput((_input, key) => {
+    if (key.escape) {
+      onDone();
+    }
+  }, { isActive: isInputStep });
+
+  function handleFieldChange(value: string) {
+    const field = currentField();
+    if (field) {
+      setForm((f) => ({ ...f, [field]: value }));
+    }
+  }
+
+  function handleFieldSubmit() {
     const field = currentField();
     if (!field) return;
 
-    if (key.return) {
-      // Validate required fields
-      if (field === "title" && !form.title.trim()) return;
-      if (field === "artist" && !form.artist.trim()) return;
-      if (field === "imageUrl" && !form.imageUrl.trim()) return;
+    // Validate required fields
+    if (field === "title" && !form.title.trim()) return;
+    if (field === "artist" && !form.artist.trim()) return;
+    if (field === "imageUrl" && !form.imageUrl.trim()) return;
 
-      // Advance to next step
-      const order: Step[] = ["title", "artist", "imageUrl", "statement", "artistUrl", "confirm"];
-      const idx = order.indexOf(step);
-      setStep(order[idx + 1]);
-      return;
-    }
-
-    if (key.backspace || key.delete) {
-      setForm((f) => ({ ...f, [field]: f[field].slice(0, -1) }));
-      return;
-    }
-
-    if (input && !key.ctrl && !key.meta) {
-      setForm((f) => ({ ...f, [field]: f[field] + input }));
-    }
-  });
+    // Advance to next step
+    const idx = fieldOrder.indexOf(step);
+    setStep(fieldOrder[idx + 1]);
+  }
 
   async function doSubmit() {
     setStep("submitting");
@@ -300,14 +316,7 @@ export function SubmitPrompt({ config, onDone }: Props) {
   }
 
   const field = currentField()!;
-  const labels: Record<string, { label: string; required: boolean }> = {
-    title: { label: "Title", required: true },
-    artist: { label: "Artist name", required: true },
-    imageUrl: { label: "Image URL", required: true },
-    statement: { label: "Statement (optional)", required: false },
-    artistUrl: { label: "Artist URL (optional)", required: false },
-  };
-  const { label, required } = labels[field];
+  const { label, required } = fieldLabels[field];
 
   return (
     <Box flexDirection="column" alignItems="center">
@@ -315,8 +324,7 @@ export function SubmitPrompt({ config, onDone }: Props) {
       <Text> </Text>
       <Box>
         <Text dimColor>{label}: </Text>
-        <Text>{form[field]}</Text>
-        <Text color={accent}>█</Text>
+        <TextInput value={form[field]} onChange={handleFieldChange} onSubmit={handleFieldSubmit} />
       </Box>
       <Text dimColor>
         {required ? "Press enter to continue, esc to cancel" : "Press enter to skip/continue, esc to cancel"}
