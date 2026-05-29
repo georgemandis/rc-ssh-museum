@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"crypto/ed25519"
 	"embed"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -131,6 +133,11 @@ func main() {
 	if IsOAuthEnabled() || os.Getenv("ADMIN_TOKEN") != "" {
 		httpMux.Handle("/auth/", AuthMux())
 	}
+	sshHost := os.Getenv("SSH_HOST")
+	if sshHost == "" {
+		sshHost = "localhost"
+	}
+	httpMux.Handle("/api/fingerprint", fingerprintHandler(".ssh/id_ed25519", sshHost))
 	httpMux.Handle("/", http.FileServer(http.FS(wwwRoot)))
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf("%s:%s", host, httpPort),
@@ -154,6 +161,55 @@ func main() {
 	if err := s.Shutdown(ctx); err != nil {
 		log.Fatal("Shutdown error", "error", err)
 	}
+}
+
+// fingerprintHandler returns an HTTP handler that serves the SSH host key
+// fingerprint and known_hosts entry as JSON. It reads the key once at startup.
+func fingerprintHandler(keyPath, sshHost string) http.Handler {
+	type response struct {
+		Fingerprint string `json:"fingerprint"`
+		KnownHosts  string `json:"knownHosts"`
+	}
+
+	pubKeyPath := keyPath + ".pub"
+	pubBytes, err := os.ReadFile(pubKeyPath)
+	if err != nil {
+		log.Warn("Could not read host public key for fingerprint endpoint", "path", pubKeyPath, "error", err)
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.Error(w, "host key not available", http.StatusServiceUnavailable)
+		})
+	}
+
+	pubKey, _, _, _, err := gossh.ParseAuthorizedKey(pubBytes)
+	if err != nil {
+		log.Warn("Could not parse host public key", "error", err)
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.Error(w, "host key not available", http.StatusServiceUnavailable)
+		})
+	}
+
+	fingerprint := gossh.FingerprintSHA256(pubKey)
+
+	// Build known_hosts line: hostname ssh-ed25519 BASE64KEY
+	var knownHosts string
+	if edKey, ok := pubKey.(gossh.CryptoPublicKey); ok {
+		if _, ok := edKey.CryptoPublicKey().(ed25519.PublicKey); ok {
+			knownHosts = fmt.Sprintf("%s ssh-ed25519 %s",
+				sshHost, base64.StdEncoding.EncodeToString(pubKey.Marshal()))
+		}
+	}
+
+	resp := response{
+		Fingerprint: fmt.Sprintf("ED25519 %s", fingerprint),
+		KnownHosts:  knownHosts,
+	}
+	respBytes, _ := json.Marshal(resp)
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "public, max-age=86400")
+		w.Write(respBytes)
+	})
 }
 
 func tuiMiddleware() wish.Middleware {

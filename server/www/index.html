@@ -277,7 +277,7 @@
       <div class="line"></div>
 
       <div class="line">
-        <span class="output">ED25519 SHA256:j9Kgox6uc82PbBqwbwn49t9BenFkj7qI94EF1Jnu4xA</span>
+        <span class="output" id="fingerprint-value">loading...</span>
       </div>
 
       <div class="line"></div>
@@ -287,7 +287,7 @@
       </div>
       <div class="line line-interactive" tabindex="0" onclick="copyKnownHost(this)"
         onkeydown="event.key==='Enter'&&copyKnownHost(this)">
-        <span class="output" style="font-size: 11px; opacity: 0.6;">mussheum.rcdis.co ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBNir8bK3ALyohtk/3grC+sg99kOZ9Lg4R3RLFX9orIs</span>
+        <span class="output" id="known-hosts-value" style="font-size: 11px; opacity: 0.6;">loading...</span>
         <span class="copy-btn">copy</span>
       </div>
 
@@ -303,8 +303,8 @@
     </div>
 
     <script>
-      function copyCommand(el) {
-        navigator.clipboard.writeText("ssh mussheum.rcdis.co").then(() => {
+      function copyCommand(el, text) {
+        navigator.clipboard.writeText(text || "ssh mussheum.rcdis.co").then(() => {
           const btn = el.querySelector(".copy-btn");
           el.classList.add("copied");
           btn.textContent = "copied!";
@@ -316,16 +316,29 @@
       }
 
       function copyKnownHost(el) {
-        navigator.clipboard.writeText("mussheum.rcdis.co ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBNir8bK3ALyohtk/3grC+sg99kOZ9Lg4R3RLFX9orIs").then(() => {
-          const btn = el.querySelector(".copy-btn");
-          el.classList.add("copied");
-          btn.textContent = "copied!";
-          setTimeout(() => {
-            el.classList.remove("copied");
-            btn.textContent = "copy";
-          }, 2000);
-        });
+        const text = document.getElementById("known-hosts-value").textContent;
+        if (!text || text === "loading..." || text === "unavailable") return;
+        copyCommand(el, text);
       }
+
+      let fingerprintLoaded = false;
+      document.querySelectorAll("details").forEach(d => {
+        d.addEventListener("toggle", function () {
+          if (!this.open || fingerprintLoaded) return;
+          if (!this.querySelector("#fingerprint-value")) return;
+          fingerprintLoaded = true;
+          fetch("/api/fingerprint")
+            .then(r => r.json())
+            .then(data => {
+              document.getElementById("fingerprint-value").textContent = data.fingerprint;
+              document.getElementById("known-hosts-value").textContent = data.knownHosts || "unavailable";
+            })
+            .catch(() => {
+              document.getElementById("fingerprint-value").textContent = "unavailable";
+              document.getElementById("known-hosts-value").textContent = "unavailable";
+            });
+        });
+      });
     </script>
   </main>
 </body>

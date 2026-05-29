@@ -2,6 +2,9 @@
 app = 'mussheum'
 primary_region = 'ewr'
 
+[env]
+  SSH_HOST = "mussheum.rcdis.co"
+
 [build]
 
 [[mounts]]
