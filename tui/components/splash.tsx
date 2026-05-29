@@ -103,6 +103,7 @@ export function Splash({ error, children, config }: Props) {
   if (splash === "logo") {
     const logoPath = join(galleryDir, "logo.png");
     const logoHeight = Math.min(Math.floor(rows * 0.3), 10);
+    const logoWidth = Math.min(Math.floor(cols * 0.5), 60);
     return (
       <Box
         flexDirection="column"
@@ -111,8 +112,8 @@ export function Splash({ error, children, config }: Props) {
         alignItems="center"
         justifyContent="center"
       >
-        <Box height={logoHeight} justifyContent="center">
-          <HalfBlockImage src={logoPath} height={logoHeight} onSupportDetected={() => {}} />
+        <Box height={logoHeight} width={logoWidth} justifyContent="center">
+          <HalfBlockImage src={logoPath} width={logoWidth} height={logoHeight} onSupportDetected={() => {}} />
         </Box>
         <Text> </Text>
         <BigText text={name} font="tiny" colors={[accent]} />
