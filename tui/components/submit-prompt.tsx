@@ -275,8 +275,8 @@ export function SubmitPrompt({ config, onDone }: Props) {
   if (step === "success") {
     return (
       <Box flexDirection="column" alignItems="center">
-        <Text color={accent}>Submission received! A pull request has been opened.</Text>
-        {prUrl && <Text dimColor>{prUrl}</Text>}
+        <Text color={accent}>Submission received! {config?.showSubmitPrUrl ? "A pull request has been opened." : "We'll review it soon."}</Text>
+        {prUrl && config?.showSubmitPrUrl && <Text dimColor>{prUrl}</Text>}
         <Text dimColor>Press any key to continue.</Text>
       </Box>
     );

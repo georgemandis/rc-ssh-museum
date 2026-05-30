@@ -73,6 +73,7 @@ export type GalleryConfig = {
   splash?: "bigtext" | "logo" | "ascii" | "image";
   submitMethod?: "github-pr";
   submitRepo?: string;
+  showSubmitPrUrl?: boolean;
   auth?: {
     provider: "oauth";
     authorizeUrl: string;

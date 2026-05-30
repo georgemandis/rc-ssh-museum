@@ -12,6 +12,7 @@
   "splash": "logo",
   "submitMethod": "github-pr",
   "submitRepo": "georgemandis/rc-ssh-museum",
+  "showSubmitPrUrl": true,
   "auth": {
     "provider": "oauth",
     "authorizeUrl": "https://www.recurse.com/oauth/authorize",
