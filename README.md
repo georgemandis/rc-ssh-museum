@@ -35,7 +35,8 @@ Gallery settings live in `gallery/config.json`:
   "sortOrder": "newest",
   "splash": "logo",
   "submitMethod": "github-pr",
-  "submitRepo": "georgemandis/rc-ssh-museum"
+  "submitRepo": "georgemandis/rc-ssh-museum",
+  "showSubmitPrUrl": true
 }
 ```
 
@@ -46,6 +47,7 @@ Key differences from the upstream mussheum:
 | `subscribeEnabled`   | `false`            | No Buttondown/Cloudflare email workers         |
 | `splash`             | `"logo"`           | Shows `gallery/logo.png` on the splash screen  |
 | `submitMethod`       | `"github-pr"`      | Submissions open PRs instead of uploading to S3 |
+| `showSubmitPrUrl`    | `true`             | Shows the PR URL to submitters after upload     |
 
 See the [mussheum README](https://github.com/georgemandis/mussheum) for the full config reference.
 
@@ -74,6 +76,7 @@ All env vars are managed via [Disco](https://disco.cloud/) (`disco env:set`).
 | `PUBLIC_URL`            | For auth | Public-facing URL (e.g. `https://mussheum.example.com`)|
 | `GITHUB_TOKEN`          | For submissions | GitHub token with Contents + Pull requests write access |
 | `ADMIN_TOKEN`           | No       | Secret token for admin API (see below)                 |
+| `SSH_HOST`              | No       | Hostname for `/api/fingerprint` response (default: `localhost`) |
 | `TUI_CMD`               | No       | Override TUI command (default: compiled binary)         |
 
 ### Admin API
@@ -87,6 +90,10 @@ curl -X POST https://<your-host>/auth/admin/clear-keys \
   -H "Authorization: Bearer <your-admin-token>"
 ```
 
+### `/api/fingerprint`
+
+The HTTP server exposes `/api/fingerprint`, which returns the SSH host key fingerprint and `known_hosts` entry as JSON. The website uses this to display verification info for first-time visitors.
+
 ## Development
 
 ```bash
@@ -97,6 +104,15 @@ bun tui/tui.tsx --user-key=test
 # Full build
 ./build.sh
 cd server && ./mussheum-server
+```
+
+### Preview Generator
+
+Generate a PNG that mimics the half-block terminal rendering of an artwork piece:
+
+```bash
+bun scripts/preview.ts gallery/my-artwork
+bun scripts/preview.ts gallery/my-artwork --output preview.png --cols 80
 ```
 
 ## Adding Artwork Manually
