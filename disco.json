@@ -5,7 +5,7 @@
       "port": 8080,
       "publishedPorts": [
         {
-          "publishedAs": 22,
+          "publishedAs": 2222,
           "fromContainerPort": 2222,
           "protocol": "tcp"
         }
